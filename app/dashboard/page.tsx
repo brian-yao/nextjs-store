@@ -1,6 +1,7 @@
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import formatPrice from "@/utils/priceFormat";
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
+import prisma from "@/utils/prisma";
 import { getServerSession } from "next-auth";
 import Image from "next/image";
 
@@ -8,7 +9,7 @@ import Image from "next/image";
 export const revalidate = 0;
 
 const fetchOrders = async () => {
-	const prisma = new PrismaClient();
+	// const prisma = new PrismaClient();
 	const user = await getServerSession(authOptions);
 	if (!user) {
 		return null;
@@ -18,7 +19,10 @@ const fetchOrders = async () => {
 		where: { userId: user?.user?.id },
 		include: { products: true },
 	});
-	return orders;
+	const sortedOrders = orders.sort((a, b) => {
+		return new Date(b.createdDate).valueOf() - new Date(a.createdDate).valueOf();
+	});
+	return sortedOrders;
 };
 
 export default async function Dashboard() {
